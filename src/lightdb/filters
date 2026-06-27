@@ -1,0 +1,83 @@
+"""
+条件过滤 
+"""
+def check_condition(row, column, operator, value):
+    row_value = row.get(column, '')
+    try:
+        row_num = float(row_value)
+        value_num = float(value)
+        
+        if operator == '=':
+            return row_num == value_num
+        elif operator == '!=':
+            return row_num != value_num
+        elif operator == '>':
+            return row_num > value_num
+        elif operator == '<':
+            return row_num < value_num
+        elif operator == '>=':
+            return row_num >= value_num
+        elif operator == '<=':
+            return row_num <= value_num
+    except (ValueError, TypeError):
+        if operator == '=':
+            return str(row_value) == str(value)
+        elif operator == '!=':
+            return str(row_value) != str(value)
+    
+    return False
+
+
+def check_all_conditions(row, conditions):
+    if not conditions:
+        return True
+    
+    result = check_condition(row, conditions[0][0], conditions[0][1], conditions[0][2])
+    
+    for i in range(1, len(conditions)):
+        col, op, val, logic = conditions[i]
+        current = check_condition(row, col, op, val)
+        
+        if logic.upper() == 'AND':
+            result = result and current
+        else:  # OR
+            result = result or current
+    
+    return result
+
+
+def filter_data(data, conditions):
+    result = []
+    for row in data:
+        if check_all_conditions(row, conditions):
+            result.append(row)
+    return result
+
+"""条件过滤测试"""
+if __name__ == '__main__':
+    test_data = [
+        {'id': '1', 'product': '手机', 'price': '3999', 'region': '北京'},
+        {'id': '2', 'product': '电脑', 'price': '5999', 'region': '上海'},
+        {'id': '3', 'product': '耳机', 'price': '499', 'region': '北京'},
+        {'id': '4', 'product': '平板', 'price': '2999', 'region': '广州'},
+    ]
+    print("条件过滤测试结果")
+    print("\n1. price > 1000:")
+    conditions = [('price', '>', '1000', 'AND')]
+    result = filter_data(test_data, conditions)
+    for r in result:
+        print(f"   {r['product']}: ¥{r['price']}")
+
+    print("\n2. price > 1000 AND region = '北京':")
+    conditions = [('price', '>', '1000', 'AND'), ('region', '=', '北京', 'AND')]
+    result = filter_data(test_data, conditions)
+    for r in result:
+        print(f"   {r['product']}: ¥{r['price']}, {r['region']}")
+
+    print("\n3. region = '北京' OR region = '广州':")
+    conditions = [('region', '=', '北京', 'AND'), ('region', '=', '广州', 'OR')]
+    result = filter_data(test_data, conditions)
+    for r in result:
+        print(f"   {r['product']}: {r['region']}")
+    
+    print("\n 测试完成!")
